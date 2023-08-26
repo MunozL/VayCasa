@@ -4,7 +4,7 @@ const bcryptjs = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const cors = require("cors");
 const { default: mongoose } = require("mongoose");
-const User = require("./models/User.js");
+const User = require("./models/User");
 const app = express();
 
 const bcryptSalt = bcryptjs.genSaltSync(10); // bcryptSalt defined
@@ -34,12 +34,12 @@ db.once("open", () => {
   console.log("Connected to MongoDB");
 });
 
-//get method
+//***********************get method test ********************
 app.get("/test", (req, res) => {
-  res.json("test ok");
+  res.json("test is ok");
 });
 
-//post method
+//********************post endpoint method*******************
 app.post("/register", async (req, res) => {
   const { name, email, password } = req.body;
 
@@ -57,28 +57,33 @@ app.post("/register", async (req, res) => {
 });
 //app opens at localhost4000
 
+//*****************Login endpoint************************
+
 app.post("/login", async (req, res) => {
   const { email, password } = req.body;
-  //find user with given email by using model
   const userDoc = await User.findOne({ email });
+
   if (userDoc) {
-    //check that password is ok
-    const passwordOk = bcryptjs.compareSync(password, userDoc.password);
-    if (passwordOk) {
+    res.json("found");
+    const passOk = bcryptjs.compareSync(password, userDoc.password);
+    if (passOk) {
       jwt.sign(
         { email: userDoc.email, id: userDoc._id },
         jwtSecret,
         {},
         (err, token) => {
           if (err) throw err;
-          res.cookie("token", token).json("Password matched");
+
+          res
+            .cookie("token", token, { secure: true, httpOnly: true })
+            .json("password ok");
         }
       );
     } else {
-      res.status(422).json("Password does not match");
+      res.status(422).json("wrong password");
     }
   } else {
-    res.json("Not found");
+    res.json("not found");
   }
 });
 

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
 
+//send request to api express app for register
 export default function RegisterPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -9,7 +10,7 @@ export default function RegisterPage() {
 
   //function to register user
   async function registerUser(ev) {
-    ev.preventDefault();
+    ev.preventDefault(); // preventDefault helps not to reload the page
     // axios.get("/test")....check test then change to post and add data
     //Need to also define post in index.js
 
