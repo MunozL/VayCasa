@@ -5,12 +5,14 @@ const jwt = require("jsonwebtoken");
 const cors = require("cors");
 const { default: mongoose } = require("mongoose");
 const User = require("./models/User");
+const cookieParser = require("cookie-parser");
 const app = express();
 
 const bcryptSalt = bcryptjs.genSaltSync(10); // bcryptSalt defined
 const jwtSecret = "randomstring";
 
 app.use(express.json()); //This allows to parse info into json
+app.use(cookieParser());
 
 //fix cors errors
 app.use(
@@ -41,16 +43,16 @@ app.get("/test", (req, res) => {
 
 //********************post endpoint method*******************
 app.post("/register", async (req, res) => {
+  mongoose.connect(process.env.MONGO_URL);
   const { name, email, password } = req.body;
 
   try {
     const userDoc = await User.create({
-      //create a User object
       name,
       email,
-      password: bcryptjs.hashSync(password, bcryptSalt), //bcryptjs helps with password encription// define (bcryptSalt) at the top
+      password: bcryptjs.hashSync(password, bcryptSalt),
     });
-    res.json({ userDoc });
+    res.json(userDoc);
   } catch (e) {
     res.status(422).json(e);
   }
@@ -60,30 +62,43 @@ app.post("/register", async (req, res) => {
 //*****************Login endpoint************************
 
 app.post("/login", async (req, res) => {
+  mongoose.connect(process.env.MONGO_URL);
   const { email, password } = req.body;
   const userDoc = await User.findOne({ email });
-
   if (userDoc) {
-    res.json("found");
     const passOk = bcryptjs.compareSync(password, userDoc.password);
     if (passOk) {
       jwt.sign(
-        { email: userDoc.email, id: userDoc._id },
+        {
+          email: userDoc.email,
+          id: userDoc._id,
+        },
         jwtSecret,
         {},
         (err, token) => {
           if (err) throw err;
-
-          res
-            .cookie("token", token, { secure: true, httpOnly: true })
-            .json("password ok");
+          res.cookie("token", token).json(userDoc);
         }
       );
     } else {
-      res.status(422).json("wrong password");
+      res.status(422).json("pass not ok");
     }
   } else {
     res.json("not found");
+  }
+});
+
+app.get("/api/profile", (req, res) => {
+  mongoose.connect(process.env.MONGO_URL);
+  const { token } = req.cookies;
+  if (token) {
+    jwt.verify(token, jwtSecret, {}, async (err, userData) => {
+      if (err) throw err;
+      const { name, email, _id } = await User.findById(userData.id);
+      res.json({ name, email, _id });
+    });
+  } else {
+    res.json(null);
   }
 });
 
