@@ -88,7 +88,7 @@ app.post("/login", async (req, res) => {
   }
 });
 
-app.get("/api/profile", (req, res) => {
+app.get("/profile", (req, res) => {
   mongoose.connect(process.env.MONGO_URL);
   const { token } = req.cookies;
   if (token) {
@@ -100,6 +100,10 @@ app.get("/api/profile", (req, res) => {
   } else {
     res.json(null);
   }
+});
+
+app.post("/logout", (req, res) => {
+  res.cookie("token", "").json(true);
 });
 
 app.listen(4000);
