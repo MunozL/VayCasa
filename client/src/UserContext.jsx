@@ -19,7 +19,7 @@ export function UserContextProvider({ children }) {
           console.error("Error fetching user profile:", error);
         });
     }
-  }, [user]);
+  }, []);
   // Add 'user' as a dependency
 
   return (

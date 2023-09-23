@@ -6,11 +6,12 @@ import axios from "axios";
 //*************Account Page function with export included */
 export default function AccountPage() {
   const [redirect, setRedirect] = useState(null);
-  const { ready, user, setUser } = useContext(UserContext); //use useCOntext fro UserCOntext to get status of user and ready
+
+  const { ready, user, setUser } = useContext(UserContext);
 
   let { subpage } = useParams();
   if (subpage === undefined) {
-    subpage = "account";
+    subpage = "profile";
   }
 
   async function logout() {
@@ -19,31 +20,32 @@ export default function AccountPage() {
     setUser(null);
   }
 
+  //If user is not ready console out loading
   if (!ready) {
-    return "Loading....";
+    return "loading...";
   }
 
-  //If statements to handle potential null or undefined values:
-  //If not ready and theres no user or no user name then navigate to login page
-  if ((ready && !user) || !user.name) return <Navigate to={"/login"} />;
-  //function to highlight link of current page.
+  //if ready and there is no user go to login
+  if (ready && !user && !redirect) {
+    return <Navigate to={"/login"} />;
+  }
+
   function LinkClasses(type = null) {
     let classes = "py-2 px-6";
-    if (type === subpage) {
+    if (type === subpage || (subpage === undefined && type === "profile")) {
       classes += " bg-primary rounded-full"; // Concatenate the classes using +=
     }
     return classes;
   }
 
-  //**********Button Links STAYS AND LISTINGS**********/
-
   if (redirect) {
     return <Navigate to={redirect} />;
   }
+
   return (
     <div>
       <nav className="w-full flex justify-center mt-8 gap-2 mb-8">
-        <Link className={LinkClasses("account")} to={"/account"}>
+        <Link className={LinkClasses("profile")} to={"/account"}>
           My Profile
         </Link>
         <Link className={LinkClasses("listings")} to={"/account/listings"}>
@@ -54,7 +56,7 @@ export default function AccountPage() {
         </Link>
       </nav>
 
-      {subpage === "account" && (
+      {subpage === "profile" && (
         <div className="text-center max-w-lg mx-auto ">
           Logged in as {(user.name, user.email)}
           <br />
@@ -66,3 +68,37 @@ export default function AccountPage() {
     </div>
   );
 }
+
+// export default function AccountPage() {
+//   const [redirect, setRedirect] = useState(null);
+//   const { ready, user, setUser } = useContext(UserContext); //use useCOntext fro UserCOntext to get status of user and ready
+
+//   async function logout() {
+//     await axios.post("/logout");
+//     setRedirect("/");
+//     setUser(null);
+//   }
+
+//   if (!ready) {
+//     return "Loading....";
+//   }
+
+//   //If statements to handle potential null or undefined values:
+//   //If not ready and theres no user or no user name then navigate to login page
+//   if ((ready && !user) || !user.name) return <Navigate to={"/login"} />;
+// //   //function to highlight link of current page.
+//   function LinkClasses(type = null) {
+//     let classes = "py-2 px-6";
+//     if (type === subpage) {
+//       classes += " bg-primary rounded-full"; // Concatenate the classes using +=
+//     }
+//     return classes;
+//   }
+
+//   //**********Button Links STAYS AND LISTINGS**********/
+
+//   if (redirect) {
+//     return <Navigate to={redirect} />;
+//   }
+
+// }

@@ -89,7 +89,7 @@ app.post("/login", async (req, res) => {
 });
 
 app.get("/profile", (req, res) => {
-  mongoose.connect(process.env.MONGO_URL);
+  //mongoose.connect(process.env.MONGO_URL);
   const { token } = req.cookies;
   if (token) {
     jwt.verify(token, jwtSecret, {}, async (err, userData) => {
