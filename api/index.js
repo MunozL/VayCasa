@@ -6,11 +6,14 @@ const cors = require("cors");
 const { default: mongoose } = require("mongoose");
 const User = require("./models/User");
 const imageDownloader = require("image-downloader");
+const multer = require("multer");
 const cookieParser = require("cookie-parser");
 const app = express();
 
 const bcryptSalt = bcryptjs.genSaltSync(10); // bcryptSalt defined
 const jwtSecret = "randomstring";
+
+app.use("/api/uploads", express.static(__dirname + "/api/uploads"));
 
 app.use(express.json()); //This allows to parse info into json
 app.use(cookieParser());
@@ -89,6 +92,7 @@ app.post("/login", async (req, res) => {
   }
 });
 
+//*****************profile endpoint************************
 app.get("/profile", (req, res) => {
   //mongoose.connect(process.env.MONGO_URL);
   const { token } = req.cookies;
@@ -103,10 +107,13 @@ app.get("/profile", (req, res) => {
   }
 });
 
+//*****************Logout endpoint************************
 app.post("/logout", (req, res) => {
   res.cookie("token", "").json(true);
 });
-
+//
+//
+//*****************photo link upload endpoint************************
 //this end point will help for uploading the images as url links/Library(yarn add image-downloader)
 app.post("/upload-by-link", async (req, res) => {
   const { link } = req.body;
@@ -117,4 +124,14 @@ app.post("/upload-by-link", async (req, res) => {
   });
   res.json(newName);
 });
+
+//*****************upload photo from device endpoint************************
+//
+//define upload functionality
+const photosMiddleware = multer({ dest: "uploads" });
+app.post("/upload", photosMiddleware.array("photos", 100), (req, res) => {
+  console.log(req.files);
+  res.json(req.files);
+});
+
 app.listen(4000);
