@@ -7,6 +7,7 @@ const { default: mongoose } = require("mongoose");
 const User = require("./models/User");
 const imageDownloader = require("image-downloader");
 const multer = require("multer");
+const fs = require("fs");
 const cookieParser = require("cookie-parser");
 const app = express();
 
@@ -128,10 +129,19 @@ app.post("/upload-by-link", async (req, res) => {
 //*****************upload photo from device endpoint************************
 //
 //define upload functionality
-const photosMiddleware = multer({ dest: "uploads" });
+const photosMiddleware = multer({ dest: "api/uploads/" });
 app.post("/upload", photosMiddleware.array("photos", 100), (req, res) => {
-  console.log(req.files);
-  res.json(req.files);
+  //for loop to rename paths of photos
+  const uploadedFiles = [];
+  for (let i = 0; i < req.files.length; i++) {
+    const { path, originalname } = req.files[i];
+    const parts = originalname.split(".");
+    const ext = parts[parts.length - 1];
+    const newPath = path + "." + ext; // new path equals path +
+    fs.renameSync(path, newPath);
+    uploadedFiles.push(newPath.replace("uploads/", ""));
+  }
+  res.json(uploadedFiles);
 });
 
 app.listen(4000);

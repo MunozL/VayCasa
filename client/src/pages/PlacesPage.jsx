@@ -27,6 +27,8 @@ export default function PlacesPage() {
   function inputDescription(text) {
     return <p className="text-gray-500 text-sm">{text}</p>;
   }
+  //
+  //
   //function passing above functions as parameters
   function preInput(header, description) {
     return (
@@ -36,6 +38,8 @@ export default function PlacesPage() {
       </>
     );
   }
+  //
+  //
   //Function to upload photos by link using api post /upload-by-link
   async function addPhotoByLink(ev) {
     ev.preventDefault();
@@ -47,6 +51,28 @@ export default function PlacesPage() {
       return [...prev, filename];
     });
     setPhotoLink(""); //Reset Photolink
+  }
+
+  //
+  //Function to upload photos from computer
+  function uploadPhoto(ev) {
+    const files = ev.target.files;
+    const data = new FormData();
+
+    for (let i = 0; i < files.length; i++) {
+      data.append("photos", files[i]);
+    }
+
+    axios
+      .post("/upload", data, {
+        headers: { "Content-type": "multipart/form-data" },
+      })
+      .then((response) => {
+        const { data: filenames } = response;
+        setAddedPhotos((prev) => {
+          return [...prev, ...filenames];
+        });
+      });
   }
 
   return (
@@ -116,7 +142,24 @@ export default function PlacesPage() {
               </button>
             </div>
             <div className="mt-2 grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
-              <button className=" flex justify-center border bg-transparent rounded-2xl p-8 text-2xl text-gray-600">
+              {addedPhotos.length > 0 &&
+                addedPhotos.map((link) => (
+                  <div className=" h-32 flex" key={link}>
+                    <img
+                      className="rounded-2xl w-full object-cover position-center"
+                      src={`http://localhost:4000/${link}`}
+                      alt="Uploaded"
+                    />
+                  </div>
+                ))}
+
+              <label className=" h-32 cursor-pointer flex justify-center border bg-transparent rounded-2xl p-8 text-2xl text-gray-600">
+                <input
+                  multiple
+                  type="file"
+                  className="hidden"
+                  onChange={uploadPhoto}
+                ></input>
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   fill="none"
@@ -132,7 +175,7 @@ export default function PlacesPage() {
                   />
                 </svg>
                 Upload photo
-              </button>
+              </label>
             </div>
             {preInput("About property", "Add description of the place")}
 
