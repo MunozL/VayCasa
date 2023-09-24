@@ -5,6 +5,7 @@ const jwt = require("jsonwebtoken");
 const cors = require("cors");
 const { default: mongoose } = require("mongoose");
 const User = require("./models/User");
+const imageDownloader = require("image-downloader");
 const cookieParser = require("cookie-parser");
 const app = express();
 
@@ -106,4 +107,14 @@ app.post("/logout", (req, res) => {
   res.cookie("token", "").json(true);
 });
 
+//this end point will help for uploading the images as url links/Library(yarn add image-downloader)
+app.post("/upload-by-link", async (req, res) => {
+  const { link } = req.body;
+  const newName = "photo" + Date.now() + ".jpg";
+  await imageDownloader.image({
+    url: link,
+    dest: __dirname + "/uploads/" + newName, //dirname(directory path name) then add to uploads directory
+  });
+  res.json(newName);
+});
 app.listen(4000);
