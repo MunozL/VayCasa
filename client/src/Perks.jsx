@@ -1,10 +1,20 @@
+/* eslint-disable react/prop-types */
 //Pass selected and on change as parameters so I can select amenities
 export default function Perks({ selected, onChange }) {
+  function handleClick(ev) {
+    console.log(ev.target);
+    const { checked, name } = ev.target;
+    if (checked) {
+      onChange([...selected, name]);
+    } else {
+      onChange([...selected.filter((selectedName) => selectedName !== name)]);
+    }
+  }
   return (
     <>
       <div className="grid grid-cols-2 md:grid-cols-4 lg gap-2 mt-2">
         <label className="border p-4 flex rounded-2xl gap-2 items-center cursor-pointer">
-          <input type="checkbox" />
+          <input type="checkbox" name="wifi" onChange={handleClick} />
           <svg
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 20 20"
@@ -21,7 +31,7 @@ export default function Perks({ selected, onChange }) {
           <span>Wifi</span>
         </label>
         <label className="border p-4 flex rounded-2xl gap-2 items-center cursor-pointer">
-          <input type="checkbox" />
+          <input type="checkbox" name="parking" onChange={handleClick} />
           <svg
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
@@ -40,7 +50,7 @@ export default function Perks({ selected, onChange }) {
           <span>Free Parking</span>
         </label>
         <label className="border p-4 flex rounded-2xl gap-2 items-center cursor-pointer">
-          <input type="checkbox" />
+          <input type="checkbox" name="pets" onChange={handleClick} />
           <svg
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
@@ -59,7 +69,7 @@ export default function Perks({ selected, onChange }) {
           <span>Pets</span>
         </label>
         <label className="border p-4 flex rounded-2xl gap-2 items-center cursor-pointer">
-          <input type="checkbox"></input>
+          <input type="checkbox" name="Tv" onChange={handleClick}></input>
           <svg
             xmlns="http://www.w3.org/2000/svg"
             fill="none"

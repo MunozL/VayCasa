@@ -5,6 +5,7 @@ const jwt = require("jsonwebtoken");
 const cors = require("cors");
 const { default: mongoose } = require("mongoose");
 const User = require("./models/User");
+const Place = require("./models/Places");
 const imageDownloader = require("image-downloader");
 const multer = require("multer");
 const fs = require("fs");
@@ -142,6 +143,40 @@ app.post("/upload", photosMiddleware.array("photos", 100), (req, res) => {
     uploadedFiles.push(newPath.replace("uploads/", ""));
   }
   res.json(uploadedFiles);
+});
+
+/*****************Accomodations/places endpoint***********************
+ create a new place import Place model and use create()
+ find user owner id with token/jwt*/ ////if user is found create new Place */
+
+app.post("/places", (req, res) => {
+  const { token } = req.cookies; //request token cookie
+  const {
+    title,
+    address,
+    addedPhotos,
+    description,
+    perks,
+    extraInfo,
+    checkIn,
+    checkOut,
+    maxGuests,
+  } = req.body;
+  jwt.verify(token, jwtSecret, {}, async (err, userData) => {
+    const placeDoc = await Place.create({
+      owner: userData.id,
+      title,
+      address,
+      addedPhotos,
+      description,
+      perks,
+      extraInfo,
+      checkIn,
+      checkOut,
+      maxGuests, //userData comes from token
+    });
+    res.json(placeDoc);
+  });
 });
 
 app.listen(4000);
