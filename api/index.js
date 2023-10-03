@@ -191,10 +191,53 @@ app.get("/places", (req, res) => {
   });
 });
 
+/*****************endpoint to grab all places by user id and display them***********************/
+
 app.get("/places/:id", async (req, res) => {
   mongoose.connect(process.env.MONGO_URL);
   const { id } = req.params;
-  res.json(await Place.findById(id));
+  res.json(await Places.findById(id));
+});
+
+/*****************end point for (update) put request of places ***********************/
+app.put("/places", async (req, res) => {
+  mongoose.connect(process.env.MONGO_URL);
+  const { token } = req.cookies;
+  const {
+    id,
+    title,
+    address,
+    addedPhotos,
+    description,
+    perks,
+    extraInfo,
+    checkIn,
+    checkOut,
+    maxGuests,
+    price,
+  } = req.body;
+  jwt.verify(token, jwtSecret, {}, async (err, userData) => {
+    if (err) throw err;
+    const placeDoc = await Places.findById(id); //fetch place from DB
+    //verify token that userData is the same as the place doc owner
+    //Added .toString to changed placeDoc.owner to a string in order to be able to compare it with id string
+    if (userData.id === placeDoc.owner.toString()) {
+      placeDoc.set({
+        title,
+        address,
+        photos: addedPhotos,
+        description,
+        perks,
+        extraInfo,
+        checkIn,
+        checkOut,
+        maxGuests,
+        price,
+      });
+      await placeDoc.save();
+      res.json("ok");
+    }
+  });
 });
 
 app.listen(4000);

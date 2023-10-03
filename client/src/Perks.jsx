@@ -14,7 +14,12 @@ export default function Perks({ selected, onChange }) {
     <>
       <div className="grid grid-cols-2 md:grid-cols-4 lg gap-2 mt-2">
         <label className="border p-4 flex rounded-2xl gap-2 items-center cursor-pointer">
-          <input type="checkbox" name="wifi" onChange={handleClick} />
+          <input
+            type="checkbox"
+            checked={selected.includes("wifi")}
+            name="wifi"
+            onChange={handleClick}
+          />
           <svg
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 20 20"
@@ -31,7 +36,12 @@ export default function Perks({ selected, onChange }) {
           <span>Wifi</span>
         </label>
         <label className="border p-4 flex rounded-2xl gap-2 items-center cursor-pointer">
-          <input type="checkbox" name="parking" onChange={handleClick} />
+          <input
+            type="checkbox"
+            checked={selected.includes("parking")}
+            name="parking"
+            onChange={handleClick}
+          />
           <svg
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
@@ -50,7 +60,12 @@ export default function Perks({ selected, onChange }) {
           <span>Free Parking</span>
         </label>
         <label className="border p-4 flex rounded-2xl gap-2 items-center cursor-pointer">
-          <input type="checkbox" name="pets" onChange={handleClick} />
+          <input
+            type="checkbox"
+            checked={selected.includes("pets")}
+            name="pets"
+            onChange={handleClick}
+          />
           <svg
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
@@ -69,7 +84,12 @@ export default function Perks({ selected, onChange }) {
           <span>Pets</span>
         </label>
         <label className="border p-4 flex rounded-2xl gap-2 items-center cursor-pointer">
-          <input type="checkbox" name="Tv" onChange={handleClick}></input>
+          <input
+            type="checkbox"
+            checked={selected.includes("Tv")}
+            name="Tv"
+            onChange={handleClick}
+          ></input>
           <svg
             xmlns="http://www.w3.org/2000/svg"
             fill="none"

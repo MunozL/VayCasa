@@ -22,9 +22,21 @@ export default function PlacesFormPage() {
   useEffect(() => {
     if (!id) {
       return;
-    } //of there is id fetch with axios
-    axios.get("/place/" + id);
-  }, id);
+    } //if there is id fetch all the data with axios api end point
+    axios.get("/places/" + id).then((response) => {
+      const { data } = response;
+      setTitle(data.title);
+      setAddress(data.address);
+      setAddedPhotos(data.photos);
+      setDescription(data.description);
+      setPerks(data.perks);
+      setExtraInfo(data.extraInfo);
+      setCheckIn(data.checkIn);
+      setCheckOut(data.checkOut);
+      setMaxGuests(data.maxGuests);
+      //setPrice(data.price);
+    });
+  }, [id]);
 
   //Function to handle all the states of h2 element texts
   function inputHeader(text) {
@@ -47,12 +59,13 @@ export default function PlacesFormPage() {
   }
 
   //
-  /************* function to add new place******************
+  /************* function to add new place into data base using axios post******************
    * const data will include all info . endpoint created to send data
    */
-  async function addNewPlace(ev) {
+  async function saveNewPlace(ev) {
     ev.preventDefault();
-    await axios.post("/places", {
+    const placeData = {
+      //define const for object
       title,
       address,
       addedPhotos,
@@ -62,8 +75,19 @@ export default function PlacesFormPage() {
       checkIn,
       checkOut,
       maxGuests,
-    });
-    setRedirect(true);
+    };
+    if (id) {
+      //update by using put request. Include id in body to know which post needs to be updated
+      await axios.put("/places", {
+        id,
+        ...placeData,
+      });
+      setRedirect(true);
+    } else {
+      //add a new place with a post request
+      await axios.post("/places", placeData);
+      setRedirect(true);
+    }
   }
   if (redirect) {
     return <Navigate to={"/account/places"} />;
@@ -71,7 +95,7 @@ export default function PlacesFormPage() {
   return (
     <div>
       <AccountNav />
-      <form onSubmit={addNewPlace}>
+      <form onSubmit={saveNewPlace}>
         {preInput("Title", "Title for your place")}
 
         <input
