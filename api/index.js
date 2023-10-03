@@ -5,7 +5,7 @@ const jwt = require("jsonwebtoken");
 const cors = require("cors");
 const { default: mongoose } = require("mongoose");
 const User = require("./models/User");
-const Place = require("./models/Places");
+const Places = require("./models/Places");
 const imageDownloader = require("image-downloader");
 const multer = require("multer");
 const fs = require("fs");
@@ -148,9 +148,9 @@ app.post("/upload", photosMiddleware.array("photos", 100), (req, res) => {
 /*****************Accomodations/places endpoint***********************
  create a new place import Place model and use create()
  find user owner id with token/jwt*/ ////if user is found create new Place */
-
 app.post("/places", (req, res) => {
-  const { token } = req.cookies; //request token cookie
+  mongoose.connect(process.env.MONGO_URL);
+  const { token } = req.cookies;
   const {
     title,
     address,
@@ -163,11 +163,12 @@ app.post("/places", (req, res) => {
     maxGuests,
   } = req.body;
   jwt.verify(token, jwtSecret, {}, async (err, userData) => {
-    const placeDoc = await Place.create({
+    if (err) throw err;
+    const placeDoc = await Places.create({
       owner: userData.id,
       title,
       address,
-      addedPhotos,
+      photo: addedPhotos,
       description,
       perks,
       extraInfo,
@@ -177,6 +178,23 @@ app.post("/places", (req, res) => {
     });
     res.json(placeDoc);
   });
+});
+
+/*****************endpoint to grab all places and display them***********************/
+//use jwt token to grab user id
+app.get("/places", (req, res) => {
+  const { token } = req.cookies; //grab cookie token
+  //decrypt it next with jwt.verify
+  jwt.verify(token, jwtSecret, {}, async (err, userData) => {
+    const { id } = userData;
+    res.json(await Places.find({ owner: id }));
+  });
+});
+
+app.get("/places/:id", async (req, res) => {
+  mongoose.connect(process.env.MONGO_URL);
+  const { id } = req.params;
+  res.json(await Place.findById(id));
 });
 
 app.listen(4000);
