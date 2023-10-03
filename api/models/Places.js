@@ -1,8 +1,6 @@
-const { default: mongoose, model } = require("mongoose");
+const mongoose = require("mongoose");
 
 const placeSchema = new mongoose.Schema({
-  //Use mongoose.Schema.Types with Object id to identify who the post owner is
-
   owner: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
   title: String,
   address: String,
@@ -11,9 +9,11 @@ const placeSchema = new mongoose.Schema({
   perks: [String],
   extraInfo: String,
   checkIn: Number,
-  checkout: Number,
+  checkOut: Number,
   maxGuests: Number,
+  price: Number,
 });
 
 const PlaceModel = mongoose.model("Place", placeSchema);
-model.export = PlaceModel;
+
+module.exports = PlaceModel;
