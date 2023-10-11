@@ -182,7 +182,7 @@ app.post("/places", (req, res) => {
 
 /*****************endpoint to grab all places and display them***********************/
 //use jwt token to grab user id
-app.get("/places", (req, res) => {
+app.get("/user-places", (req, res) => {
   const { token } = req.cookies; //grab cookie token
   //decrypt it next with jwt.verify
   jwt.verify(token, jwtSecret, {}, async (err, userData) => {
@@ -240,4 +240,7 @@ app.put("/places", async (req, res) => {
   });
 });
 
+app.get("/places", async (req, res) => {
+  res.json(await Places.find());
+});
 app.listen(4000);

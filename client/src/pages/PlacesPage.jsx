@@ -7,7 +7,7 @@ export default function PlacesPage() {
   // Get action to get data from places db using useEffect and useState
   const [places, setPlaces] = useState([]);
   useEffect(() => {
-    axios.get("/places").then(({ data }) => {
+    axios.get("/user-places").then(({ data }) => {
       setPlaces(data);
     });
   }, []);
