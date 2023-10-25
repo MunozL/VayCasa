@@ -27,7 +27,7 @@ export default function Header() {
           <span className="font-bold text-lg text-gray-600">VayCasa</span>
         </Link>
 
-        {/* *******SEARCH BAR FEATURE******** */}
+        {/* *******SEARCH BAR FEATURE******** 
 
         <div className="flex gap-2 border border-gray-300 rounded-full py-2 px-4 shadow-md shadow-gray-300">
           <div>Place</div>
@@ -53,6 +53,7 @@ export default function Header() {
             </svg>
           </button>
         </div>
+        */}
 
         {/* *******DROP DOWN FEATURE******** */}
         <Link
