@@ -10,6 +10,9 @@ const imageDownloader = require("image-downloader");
 const multer = require("multer");
 const fs = require("fs");
 const cookieParser = require("cookie-parser");
+const Booking = require("./models/Booking");
+const { resolve } = require("path");
+const { rejects } = require("assert");
 const app = express();
 
 const bcryptSalt = bcryptjs.genSaltSync(10); // bcryptSalt defined
@@ -94,7 +97,7 @@ app.post("/login", async (req, res) => {
   }
 });
 
-//*****************profile endpoint************************
+//*****************profile GET endpoint************************
 app.get("/profile", (req, res) => {
   //mongoose.connect(process.env.MONGO_URL);
   const { token } = req.cookies;
@@ -182,7 +185,7 @@ app.post("/places", (req, res) => {
 
 /*****************endpoint to grab all places and display them***********************/
 //use jwt token to grab user id
-app.get("/places", (req, res) => {
+app.get("/user-places", (req, res) => {
   const { token } = req.cookies; //grab cookie token
   //decrypt it next with jwt.verify
   jwt.verify(token, jwtSecret, {}, async (err, userData) => {
@@ -238,6 +241,50 @@ app.put("/places", async (req, res) => {
       res.json("ok");
     }
   });
+});
+/***************** GET end point for places ***********************/
+
+app.get("/places", async (req, res) => {
+  res.json(await Places.find());
+});
+
+/*****************Post end point adding/saving a booking ***********************/
+app.post("/bookings", async (req, res) => {
+  mongoose.connect(process.env.MONGO_URL);
+  const userData = await getUserDataFromReq(req);
+  const { place, checkIn, checkOut, numberOfGuests, name, phone, price } =
+    req.body;
+  Booking.create({
+    place,
+    checkIn,
+    checkOut,
+    numberOfGuests,
+    name,
+    phone,
+    price,
+    user: userData.id,
+  })
+    .then((doc) => {
+      res.json(doc);
+    })
+    .catch((err) => {
+      throw err;
+    });
+});
+/*****************GET end point for showing all bookings ***********************/
+
+function getUserDataFromReq(req) {
+  return new Promise((resolve, reject) => {
+    jwt.verify(req.cookies.token, jwtSecret, {}, async (err, userData) => {
+      if (err) throw err;
+      resolve(userData);
+    });
+  });
+}
+app.get("/bookings", async (req, res) => {
+  mongoose.connect(process.env.MONGO_URL);
+  const userData = await getUserDataFromReq(req);
+  res.json(await Booking.find({ user: userData.id }).populate("place"));
 });
 
 app.listen(4000);
