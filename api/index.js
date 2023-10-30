@@ -30,15 +30,15 @@ app.use(cookieParser());
 app.use(
   cors({
     credentials: true,
-    origin: "https://vaycasa.vercel.app",
+    origin: ["http://localhost:5173", "https://vaycasa.vercel.app"], // Allow both localhost and your production origin
   })
 );
 
 //Connect to mongodb
-// mongoose.connect(process.env.MONGO_URL, {
-//   useNewUrlParser: true,
-//   useUnifiedTopology: true,
-// });
+mongoose.connect(process.env.MONGO_URL, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+});
 
 //mongodb event handler
 const db = mongoose.connection;
