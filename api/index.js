@@ -75,13 +75,13 @@ async function uploadToS3(path, originalFileName, mimetype) {
 }
 
 //***********************get method test ********************
-app.get("/test", (req, res) => {
+app.get("/api/test", (req, res) => {
   mongoose.connect(process.env.MONGO_URL);
   res.json("test is ok");
 });
 
 //********************post endpoint method*******************
-app.post("/register", async (req, res) => {
+app.post("/api/register", async (req, res) => {
   mongoose.connect(process.env.MONGO_URL);
   const { name, email, password } = req.body;
 
@@ -100,7 +100,7 @@ app.post("/register", async (req, res) => {
 
 //*****************Login endpoint************************
 
-app.post("/login", async (req, res) => {
+app.post("/api/login", async (req, res) => {
   mongoose.connect(process.env.MONGO_URL);
   const { email, password } = req.body;
   const userDoc = await User.findOne({ email });
@@ -128,7 +128,7 @@ app.post("/login", async (req, res) => {
 });
 
 //*****************profile GET endpoint************************
-app.get("/profile", (req, res) => {
+app.get("/api/profile", (req, res) => {
   mongoose.connect(process.env.MONGO_URL);
   const { token } = req.cookies;
   if (token) {
@@ -143,14 +143,14 @@ app.get("/profile", (req, res) => {
 });
 
 //*****************Logout endpoint************************
-app.post("/logout", (req, res) => {
+app.post("/api/logout", (req, res) => {
   res.cookie("token", "").json(true);
 });
 //
 //
 //*****************photo link upload endpoint************************
 //this end point will help for uploading the images as url links/Library(yarn add image-downloader)
-app.post("/upload-by-link", async (req, res) => {
+app.post("/api/upload-by-link", async (req, res) => {
   mongoose.connect(process.env.MONGO_URL);
   const { link } = req.body;
   const newName = "photo" + Date.now() + ".jpg";
@@ -171,16 +171,20 @@ app.post("/upload-by-link", async (req, res) => {
 //define upload functionality
 const photosMiddleware = multer({ dest: "/tmp " });
 //
-app.post("/upload", photosMiddleware.array("photos", 100), async (req, res) => {
-  //for loop to rename paths of photos
-  const uploadedFiles = [];
-  for (let i = 0; i < req.files.length; i++) {
-    const { path, originalname, mimetype } = req.files[i];
-    const url = await uploadToS3(path, originalname, mimetype);
-    uploadedFiles.push(url);
+app.post(
+  "/api/upload",
+  photosMiddleware.array("photos", 100),
+  async (req, res) => {
+    //for loop to rename paths of photos
+    const uploadedFiles = [];
+    for (let i = 0; i < req.files.length; i++) {
+      const { path, originalname, mimetype } = req.files[i];
+      const url = await uploadToS3(path, originalname, mimetype);
+      uploadedFiles.push(url);
+    }
+    res.json(uploadedFiles);
   }
-  res.json(uploadedFiles);
-});
+);
 
 //  const parts = originalname.split(".");
 //  const ext = parts[parts.length - 1];
@@ -191,7 +195,7 @@ app.post("/upload", photosMiddleware.array("photos", 100), async (req, res) => {
 /*****************Accomodations/places endpoint***********************
  create a new place import Place model and use create()
  find user owner id with token/jwt*/ ////if user is found create new Place */
-app.post("/places", (req, res) => {
+app.post("/api/places", (req, res) => {
   mongoose.connect(process.env.MONGO_URL);
   const { token } = req.cookies;
   const {
@@ -225,7 +229,7 @@ app.post("/places", (req, res) => {
 
 /*****************endpoint to grab all places and display them***********************/
 //use jwt token to grab user id
-app.get("/user-places", (req, res) => {
+app.get("/api/user-places", (req, res) => {
   mongoose.connect(process.env.MONGO_URL);
 
   const { token } = req.cookies; //grab cookie token
@@ -238,14 +242,14 @@ app.get("/user-places", (req, res) => {
 
 /*****************endpoint to grab all places by user id and display them***********************/
 
-app.get("/places/:id", async (req, res) => {
+app.get("/api/places/:id", async (req, res) => {
   mongoose.connect(process.env.MONGO_URL);
   const { id } = req.params;
   res.json(await Places.findById(id));
 });
 
 /*****************end point for (update) put request of places ***********************/
-app.put("/places", async (req, res) => {
+app.put("/api/places", async (req, res) => {
   mongoose.connect(process.env.MONGO_URL);
   const { token } = req.cookies;
   const {
@@ -286,14 +290,14 @@ app.put("/places", async (req, res) => {
 });
 /***************** GET end point for places ***********************/
 
-app.get("/places", async (req, res) => {
+app.get("/api/places", async (req, res) => {
   mongoose.connect(process.env.MONGO_URL);
 
   res.json(await Places.find());
 });
 
 /*****************Post end point adding/saving a booking ***********************/
-app.post("/bookings", async (req, res) => {
+app.post("/api/bookings", async (req, res) => {
   mongoose.connect(process.env.MONGO_URL);
   const userData = await getUserDataFromReq(req);
   const { place, checkIn, checkOut, numberOfGuests, name, phone, price } =
@@ -325,7 +329,7 @@ function getUserDataFromReq(req) {
     });
   });
 }
-app.get("/bookings", async (req, res) => {
+app.get("/api/bookings", async (req, res) => {
   mongoose.connect(process.env.MONGO_URL);
   const userData = await getUserDataFromReq(req);
   res.json(await Booking.find({ user: userData.id }).populate("place"));
