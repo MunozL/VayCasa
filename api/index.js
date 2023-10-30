@@ -17,6 +17,8 @@ const { resolve } = require("path");
 const { rejects } = require("assert");
 const app = express();
 
+//const API_BASE_URL = "https://vaycasa.vercel.app/api"; // Make sure this matches your environment variable
+
 const bcryptSalt = bcryptjs.genSaltSync(10); // bcryptSalt defined
 const jwtSecret = "randomstring";
 const bucket = "vaycasa-booking-app";
@@ -30,7 +32,7 @@ app.use(cookieParser());
 app.use(
   cors({
     credentials: true,
-    origin: ["http://localhost:5173", "https://vaycasa.vercel.app"], // Allow both localhost and your production origin
+    origin: ["http://localhost:5173", "https://vaycasa.vercel.app/api"], // Allow both localhost and your production origin
   })
 );
 
