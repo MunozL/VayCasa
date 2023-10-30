@@ -30,7 +30,7 @@ app.use(cookieParser());
 app.use(
   cors({
     credentials: true,
-    origin: "http://localhost:5173",
+    origin: ["http://localhost:5173", "https://vaycasa.vercel.app"], // Allow both localhost and your production origin
   })
 );
 
