@@ -8,7 +8,9 @@ const User = require("./models/User");
 const Places = require("./models/Places");
 const imageDownloader = require("image-downloader");
 const multer = require("multer");
+const { S3Client, PutObjectCommand } = require("@aws-sdk/client-s3");
 const fs = require("fs");
+const mime = require("mime-types");
 const cookieParser = require("cookie-parser");
 const Booking = require("./models/Booking");
 const { resolve } = require("path");
@@ -17,6 +19,7 @@ const app = express();
 
 const bcryptSalt = bcryptjs.genSaltSync(10); // bcryptSalt defined
 const jwtSecret = "randomstring";
+const bucket = "vaycasa-booking-app";
 
 app.use("/api/uploads", express.static(__dirname + "/api/uploads"));
 
@@ -32,10 +35,10 @@ app.use(
 );
 
 //Connect to mongodb
-mongoose.connect(process.env.MONGO_URL, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-});
+// mongoose.connect(process.env.MONGO_URL, {
+//   useNewUrlParser: true,
+//   useUnifiedTopology: true,
+// });
 
 //mongodb event handler
 const db = mongoose.connection;
@@ -45,8 +48,35 @@ db.once("open", () => {
   console.log("Connected to MongoDB");
 });
 
+//***********************FUNCTION FOR uploading files to S3 bucket********************
+
+async function uploadToS3(path, originalFileName, mimetype) {
+  //define client
+  const client = new S3Client({
+    region: "us-east-2",
+    credentials: {
+      accessKeyId: process.env.S3_ACCESS_KEY,
+      secretAccessKey: process.env.S3_SECRET_ACCESS_KEY,
+    },
+  });
+  const parts = originalFileName.split(".");
+  const ext = parts[parts.length - 1];
+  const newFileName = Date.now() + "." + ext;
+  await client.send(
+    new PutObjectCommand({
+      Bucket: bucket,
+      Body: fs.readFileSync(path),
+      Key: newFileName,
+      ContentType: mimetype,
+      ACL: "public-read",
+    })
+  );
+  return `https://${bucket}.s3.amazonaws.com/${newFileName}`;
+}
+
 //***********************get method test ********************
 app.get("/test", (req, res) => {
+  mongoose.connect(process.env.MONGO_URL);
   res.json("test is ok");
 });
 
@@ -99,7 +129,7 @@ app.post("/login", async (req, res) => {
 
 //*****************profile GET endpoint************************
 app.get("/profile", (req, res) => {
-  //mongoose.connect(process.env.MONGO_URL);
+  mongoose.connect(process.env.MONGO_URL);
   const { token } = req.cookies;
   if (token) {
     jwt.verify(token, jwtSecret, {}, async (err, userData) => {
@@ -121,32 +151,42 @@ app.post("/logout", (req, res) => {
 //*****************photo link upload endpoint************************
 //this end point will help for uploading the images as url links/Library(yarn add image-downloader)
 app.post("/upload-by-link", async (req, res) => {
+  mongoose.connect(process.env.MONGO_URL);
   const { link } = req.body;
   const newName = "photo" + Date.now() + ".jpg";
   await imageDownloader.image({
     url: link,
-    dest: __dirname + "/uploads/" + newName, //dirname(directory path name) then add to uploads directory
+    dest: "/tmp/" + newName, //temporary directory
   });
-  res.json(newName);
+  const url = await uploadToS3(
+    "/tmp/" + newName,
+    newName,
+    mime.lookup("/tmp/" + newName)
+  );
+  res.json(url);
 });
 
 //*****************upload photo from device endpoint************************
 //
 //define upload functionality
-const photosMiddleware = multer({ dest: "api/uploads/" });
-app.post("/upload", photosMiddleware.array("photos", 100), (req, res) => {
+const photosMiddleware = multer({ dest: "/tmp " });
+//
+app.post("/upload", photosMiddleware.array("photos", 100), async (req, res) => {
   //for loop to rename paths of photos
   const uploadedFiles = [];
   for (let i = 0; i < req.files.length; i++) {
-    const { path, originalname } = req.files[i];
-    const parts = originalname.split(".");
-    const ext = parts[parts.length - 1];
-    const newPath = path + "." + ext; // new path equals path +
-    fs.renameSync(path, newPath);
-    uploadedFiles.push(newPath.replace("uploads/", ""));
+    const { path, originalname, mimetype } = req.files[i];
+    const url = await uploadToS3(path, originalname, mimetype);
+    uploadedFiles.push(url);
   }
   res.json(uploadedFiles);
 });
+
+//  const parts = originalname.split(".");
+//  const ext = parts[parts.length - 1];
+//  const newPath = path + "." + ext; // new path equals path +
+//  fs.renameSync(path, newPath);
+//  uploadedFiles.push(newPath.replace("uploads/", ""));
 
 /*****************Accomodations/places endpoint***********************
  create a new place import Place model and use create()
@@ -186,6 +226,8 @@ app.post("/places", (req, res) => {
 /*****************endpoint to grab all places and display them***********************/
 //use jwt token to grab user id
 app.get("/user-places", (req, res) => {
+  mongoose.connect(process.env.MONGO_URL);
+
   const { token } = req.cookies; //grab cookie token
   //decrypt it next with jwt.verify
   jwt.verify(token, jwtSecret, {}, async (err, userData) => {
@@ -245,6 +287,8 @@ app.put("/places", async (req, res) => {
 /***************** GET end point for places ***********************/
 
 app.get("/places", async (req, res) => {
+  mongoose.connect(process.env.MONGO_URL);
+
   res.json(await Places.find());
 });
 

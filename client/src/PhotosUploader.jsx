@@ -1,6 +1,7 @@
 /* eslint-disable react/prop-types */
 import axios from "axios";
 import { useState } from "react";
+import Image from "./Image";
 
 export default function PhotoUploader({ addedPhotos, onChange }) {
   //array for photos
@@ -9,7 +10,7 @@ export default function PhotoUploader({ addedPhotos, onChange }) {
   //Function to upload photos by link using api post /upload-by-link
   async function addPhotoByLink(ev) {
     ev.preventDefault();
-    const { data: filename } = await axios.post("/upload-by-link", {
+    const { data: filename } = await axios.post("/upload-by-link/", {
       link: photoLink,
     });
     onChange((prev) => {
@@ -75,9 +76,9 @@ export default function PhotoUploader({ addedPhotos, onChange }) {
         {addedPhotos.length > 0 &&
           addedPhotos.map((link) => (
             <div className=" h-32 flex relative" key={link}>
-              <img
+              <Image
                 className="rounded-2xl w-full object-cover position-center"
-                src={`http://localhost:4000/${link}`}
+                src={`${link}`}
                 alt="Uploaded"
               />
 
